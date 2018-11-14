@@ -98,13 +98,29 @@ class FFNN:
 	def _backward_prop(self, X, Y):
 		"""
 		This method performs backward propagation given the current output vector A.
+		It updates the parameters in place, a.k.a it doesn't return it for the callee to perform update
 
 		:param X: Input training vector of size (x_n, m)
 		:param Y: Output training vector of size (1, m)
-		:param A: Output vector of shape (1, m) corresponding to the current models output for each input vector passed where m can be 1
-		:return: Dictionary with gradient descent results stored in it with keys - { dW, db }
+		:return: None
 		"""
-		pass
+
+		m = Y.shape[1]
+		L = len(self.n_nodes)
+		d_ai = -((Y / self.cache['A'][L - 1]) - ((1 - Y) / (1 - self.cache['A'][L - 1])))
+
+		for i in range(L - 1, 0, -1):
+			# Calculate gradient descent at the current layer
+			d_zi = d_ai * self.dg[i](self.cache['A'][i], self.cache['Z'][i])
+			d_wi = np.dot(d_zi, self.cache['A'][i - 1].T) / m
+			d_bi = np.mean(d_zi, axis=1, keepdims=True)
+
+			# Calculate d_ai for the previous layer, i.e. i = i - 1
+			d_ai = np.dot(self.W[i].T, d_zi)
+
+			# Update the parameters in this layer
+			self.W[i] -= d_wi
+			self.b[i] -= d_bi
 
 	def train(self, X_train, Y_train, iterations=1000, print_logs=False):
 		"""
