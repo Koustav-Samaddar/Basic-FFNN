@@ -139,7 +139,70 @@ class FFNN:
 		:param print_logs: boolean to select whether or not to print log in stdout
 		:return: None
 		"""
-		pass
+		# Initialising logging variables
+		fprop_times = []
+		bprop_times = []
+		pass_times  = []
+
+		if print_logs:
+			print("Input vector size (x_n) : {}".format(self.n_nodes[0]))
+			print("# of training sets  (m) : {}".format(Y_train.shape[1]))
+			print()
+
+		# Iterating `iterations` number of times
+		for i in range(iterations):
+			# Run forward prop to get current model output
+			tic = time.time()
+			self._forward_prop(X=X_train)
+			toc = time.time()
+			fprop_time = toc - tic
+
+			# Compute gradient descent values using back prop
+			tic = time.time()
+			self._backward_prop(X_train, Y_train)
+			toc = time.time()
+			bprop_time = toc - tic
+
+			# Logging total pass time
+			pass_time = fprop_time + bprop_time
+
+			# Logging time taken by first pass
+			if i % 1000 == 0:
+				if print_logs:
+					# Print time consumed by first pass and/or so far
+					if i == 0:
+						print("Iter #{3:d}: [ Forward Prop: {0:s}, Backward Prop: {1:s}, Total Pass: {2:s} ]".format(
+							*list(map(time_to_str, [fprop_time, bprop_time, pass_time])), i))
+					else:
+						print("Iter #{3:d}: [ Forward Prop: {0:s}, Backward Prop: {1:s}, Total Pass: {2:s} ]".format(
+							*list(map(time_to_str, map(sum, [fprop_times, bprop_times, pass_times]))), i))
+
+					# Get predictions from the classifier
+					Y_predict = self.predict(X_train)
+					n_correct = np.sum(Y_predict == Y_train)
+
+					# Calculate and print the accuracy
+					print("Accuracy: {0:.2f}%".format(n_correct / Y_train.shape[1] * 100))
+					print()
+
+			# Adding times to their respective lists
+			fprop_times.append(fprop_time)
+			bprop_times.append(bprop_time)
+			pass_times.append(pass_time)
+
+		# Logging total training time taken
+		if print_logs:
+			mean = lambda x: sum(x) / len(x)
+			# Print total times
+			print("Training Total: [ Forward Prop: {0:s}, Backward Prop: {1:s}, Total Pass: {2:s} ]".format(
+				*list(map(time_to_str, map(sum, [fprop_times, bprop_times, pass_times])))))
+			# Print average times
+			print("Training Average: [ Forward Prop: {0:s}, Backward Prop: {1:s}, Total Pass: {2:s} ]".format(
+				*list(map(time_to_str, map(mean, [fprop_times, bprop_times, pass_times])))))
+			# Print maximum times
+			print("Training Max: [ Forward Prop: {0:s}, Backward Prop: {1:s}, Total Pass: {2:s} ]".format(
+				*list(map(time_to_str, map(max, [fprop_times, bprop_times, pass_times])))))
+			print()
 
 	def predict(self, X, Y=None):
 		"""
