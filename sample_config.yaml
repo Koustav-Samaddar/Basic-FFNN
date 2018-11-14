@@ -1,0 +1,18 @@
+
+# Only describes hidden layers
+layers:
+  - n_nodes: 16                   # Layer 1
+    activation: 'tanh'
+  - n_nodes: 16
+    activation: 'tanh'
+  - n_nodes: 8
+    activation: 'tanh'
+  - n_nodes: 5
+    activation: 'tanh'
+  - n_nodes: 3                    # Layer L - 1
+    activation: 'tanh'
+
+# Only describes output layers
+output:
+  - n_nodes: 1
+    activation: 'sigmoid'
