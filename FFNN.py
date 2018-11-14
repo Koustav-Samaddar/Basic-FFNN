@@ -10,6 +10,33 @@ from commons import time_to_str
 
 class FFNN:
 
+	@staticmethod
+	def getActivatorFunction(s):
+		if s == 'tanh':
+			return np.tanh
+		elif s == 'sigmoid':
+			return lambda z: 1 / (1 + np.exp(-z))
+		elif s == 'leaky-relu':
+			return lambda z: max(0.01 * z, z)
+		elif s == 'relu':
+			return lambda z: max(0, z)
+		else:
+			raise ValueError(f'Unsupported activation function {s}')
+
+	@staticmethod
+	def getActivatorDerivative(s):
+		if s == 'tanh':
+			return lambda a, z: 1 - (a ** 2)
+		elif s == 'sigmoid':
+			return lambda a, z: a * (1 - a)
+		elif s == 'leaky-relu':
+			return lambda a, z: np.where(z < 0, 0.01, 1)
+		elif s == 'relu':
+			return lambda a, z: np.where(z < 0, 0, 1)
+		else:
+			raise ValueError(f'Unsupported activation function {s}')
+
+	# noinspection PyTypeChecker
 	def __init__(self, config_file, x_n = None):
 		"""
 		This constructor assigns the hyper-parameters based on the config file.
@@ -24,8 +51,10 @@ class FFNN:
 		if x_n is not None:
 			# Creating and storing parameters for the FFNN
 			self.n_nodes = [ x_n ] + [ layer_data['n_nodes'] for layer_data in config['layers'] ] + [ config['output']['n_nodes'] ]
-			self.W = [ None ] + [ np.random.randn(n_curr, n_prev) for n_prev, n_curr in zip(self.n_nodes[:-1], self.n_nodes[1:]) ]
-			self.b = [ None ] + [ np.zeros(n_curr, 1) for n_curr in self.n_nodes[1:] ]
+			self.W  = [ None ] + [ np.random.randn(n_curr, n_prev) for n_prev, n_curr in zip(self.n_nodes[:-1], self.n_nodes[1:]) ]
+			self.b  = [ None ] + [ np.zeros(n_curr, 1) for n_curr in self.n_nodes[1:] ]
+			self.g  = [ None ] + list(map(FFNN.getActivatorFunction, [ x['activation'] for x in config['layers'] ]))
+			self.dg = [ None ] + list(map(FFNN.getActivatorDerivative, [ x['activation'] for x in config['layers'] ]))
 
 			self.cache = { 'A': [ None ] + [ np.zeros(n_curr, 1) for n_curr in self.n_nodes[1:] ],
 			               'Z': [ None ] + [ np.zeros(n_curr, 1) for n_curr in self.n_nodes[1:] ] }
@@ -35,20 +64,24 @@ class FFNN:
 			with open(config_file, 'r') as f:
 				params = pickle.load(f)
 
-			self.W = params['W']
-			self.b = params['b']
+			self.W  = params['W']
+			self.b  = params['b']
+			self.g  = params['g']
+			self.dg = params['dg']
 			self.n_nodes = params['n_nodes']
-			self.cache = params['cache']
+			self.cache   = params['cache']
 
 	def _forward_prop(self, X):
 		"""
 		This method performs forward propagation using the current parameters of the model using the giver input vector(s)
-		and returns the corresponding output value(s).
+		and stores the corresponding output value(s) in the cache.
 
 		:param X: Single or multiple input vector(s) of shape (x_n, m) where m can be 1
-		:return: A: Output vector of shape (1, m) corresponding to the current models output for each input vector passed where m can be 1
+		:return: None
 		"""
-		pass
+		for i in range(1, len(self.n_nodes)):
+			self.cache['Z'][i] = np.dot(self.W[i], self.cache['A'][i - 1]) + self.b[i]
+			self.cache['A'][i] = self.g[i](self.cache['Z'][i])
 
 	@staticmethod
 	def loss(A, Y):
@@ -60,7 +93,7 @@ class FFNN:
 		:param Y: Expected output vector of shape (1, m) corresponding to the current models output for each input vector passed where m can be 1
 		:return: Loss if A.shape == (1, 1) else Cost
 		"""
-		pass
+		return -(Y * np.log(A) + (1 - Y) * np.log(1 - A))
 
 	def _backward_prop(self, X, Y):
 		"""
@@ -106,7 +139,9 @@ class FFNN:
 		:return: None
 		"""
 
-		params = { 'W': self.W, 'b': self.b, 'n_nodes': self.n_nodes, 'cache': self.cache }
+		params = { 'W': self.W, 'b': self.b,
+		           'g': self.g, 'dg': self.dg,
+		           'n_nodes': self.n_nodes, 'cache': self.cache }
 
 		with open(os.path.join(dir_path, file_name) + '.pck', 'w') as f:
 			pickle.dump(params, f, protocol=pickle.HIGHEST_PROTOCOL)
