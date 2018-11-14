@@ -1,6 +1,7 @@
 
 import os
 import time
+import yaml
 import pickle
 
 import numpy as np
@@ -9,22 +10,35 @@ from commons import time_to_str
 
 class FFNN:
 
-	def __init__(self, config_file):
+	def __init__(self, config_file, x_n = None):
 		"""
 		This constructor assigns the hyper-parameters based on the config file.
 
 		:param config_file: path to config file that has all hyper-parameters to describe a FFNN
+		:param x_n: number of nodes in the input layer
 		"""
-		pass
+		with open(config_file, 'r') as f:
+			config = yaml.load(f)
 
-	@staticmethod
-	def load_FFNN(file_path):
-		"""
-		This method loads a pre-trained neural network from the provided save file.
+		# Creating a new FFNN
+		if x_n is not None:
+			# Creating and storing parameters for the FFNN
+			self.n_nodes = [ x_n ] + [ layer_data['n_nodes'] for layer_data in config['layers'] ] + [ config['output']['n_nodes'] ]
+			self.W = [ None ] + [ np.random.randn(n_curr, n_prev) for n_prev, n_curr in zip(self.n_nodes[:-1], self.n_nodes[1:]) ]
+			self.b = [ None ] + [ np.zeros(n_curr, 1) for n_curr in self.n_nodes[1:] ]
 
-		:param file_path: Path to the file
-		"""
-		pass
+			self.cache = { 'A': [ None ] + [ np.zeros(n_curr, 1) for n_curr in self.n_nodes[1:] ],
+			               'Z': [ None ] + [ np.zeros(n_curr, 1) for n_curr in self.n_nodes[1:] ] }
+
+		# Loading FFNN from a save-state
+		else:
+			with open(config_file, 'r') as f:
+				params = pickle.load(f)
+
+			self.W = params['W']
+			self.b = params['b']
+			self.n_nodes = params['n_nodes']
+			self.cache = params['cache']
 
 	def _forward_prop(self, X):
 		"""
@@ -91,4 +105,8 @@ class FFNN:
 		:param dir_path: Path to the target directory
 		:return: None
 		"""
-		pass
+
+		params = { 'W': self.W, 'b': self.b, 'n_nodes': self.n_nodes, 'cache': self.cache }
+
+		with open(os.path.join(dir_path, file_name) + '.pck', 'w') as f:
+			pickle.dump(params, f, protocol=pickle.HIGHEST_PROTOCOL)

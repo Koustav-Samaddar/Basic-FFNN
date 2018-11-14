@@ -14,5 +14,5 @@ layers:
 
 # Only describes output layers
 output:
-  - n_nodes: 1
-    activation: 'sigmoid'
+  n_nodes: 1
+  activation: 'sigmoid'
