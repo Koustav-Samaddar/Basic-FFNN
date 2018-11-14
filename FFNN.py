@@ -79,6 +79,10 @@ class FFNN:
 		:param X: Single or multiple input vector(s) of shape (x_n, m) where m can be 1
 		:return: None
 		"""
+		# 0th layer is the input layer
+		self.cache['A'][0] = X
+
+		# Iterate over each layer
 		for i in range(1, len(self.n_nodes)):
 			self.cache['Z'][i] = np.dot(self.W[i], self.cache['A'][i - 1]) + self.b[i]
 			self.cache['A'][i] = self.g[i](self.cache['Z'][i])
