@@ -77,7 +77,7 @@ class FFNN:
 		and stores the corresponding output value(s) in the cache.
 
 		:param X: Single or multiple input vector(s) of shape (x_n, m) where m can be 1
-		:return: None
+		:return: Final result
 		"""
 		# 0th layer is the input layer
 		self.cache['A'][0] = X
@@ -86,6 +86,8 @@ class FFNN:
 		for i in range(1, len(self.n_nodes)):
 			self.cache['Z'][i] = np.dot(self.W[i], self.cache['A'][i - 1]) + self.b[i]
 			self.cache['A'][i] = self.g[i](self.cache['Z'][i])
+
+		return self.cache['A'][-1]
 
 	@staticmethod
 	def loss(A, Y):
@@ -148,7 +150,12 @@ class FFNN:
 		:param Y: Output vector of size (x_n, m) where m can be 1 (optional)
 		:return: Prediction vector on X if y is not provided, else accuracy vector
 		"""
-		pass
+		# Compute Y_hat (A)
+		if Y is None:
+			return np.where(self._forward_prop(X) > 0.5, 1, 0)
+		# Compute L1 cost
+		else:
+			return np.abs(self._forward_prop(X) - Y) / Y * 100
 
 	def save_FFNN(self, file_name, dir_path='F:\\Neural_Networks\\'):
 		"""
