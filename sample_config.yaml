@@ -1,0 +1,18 @@
+
+# Only describes hidden layers
+layers:
+  - n_nodes: 16                   # Layer 1
+    activation: 'leaky-relu'
+  - n_nodes: 16
+    activation: 'leaky-relu'
+  - n_nodes: 8
+    activation: 'leaky-relu'
+  - n_nodes: 5
+    activation: 'leaky-relu'
+  - n_nodes: 3                    # Layer L - 1
+    activation: 'leaky-relu'
+
+# Only describes output layers
+output:
+  n_nodes: 1
+  activation: 'sigmoid'
