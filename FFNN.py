@@ -201,8 +201,8 @@ class FFNN:
 					# Get predictions from the classifier
 
 					# Calculate and print the accuracy
-					accuracy = self.predict(X_train, Y_train)
-					print("Accuracy: {0:.2f}%".format(accuracy))
+					accuracy = self.predict(X_train, Y_train, soft=False)
+					print("Accuracy (RMS): {0:.2f}%".format(accuracy))
 					print()
 
 			# Adding times to their respective lists
@@ -226,16 +226,17 @@ class FFNN:
 
 			# Calculate and print the accuracy
 			accuracy = self.predict(X_train, Y_train)
-			print("Accuracy: {0:.2f}%".format(accuracy))
+			print("Accuracy: {0:f}%".format(accuracy))
 			print()
 
-	def predict(self, X, Y=None):
+	def predict(self, X, Y=None, soft=True):
 		"""
 		This method performs predictions using its current parameters on X and return the appropriate results.
 		If Y is provided, it will instead return the accuracy of the predictions w.r.t Y.
 
 		:param X: Input vector of size (x_n, m) where m can be 1
 		:param Y: Output vector of size (x_n, m) where m can be 1 (optional)
+		:param soft: Type of error calculation - send False for RMS (optional)
 		:return: Prediction vector on X if y is not provided, else accuracy vector
 		"""
 		# Compute Y_hat (A)
@@ -243,8 +244,11 @@ class FFNN:
 			return np.where(self._forward_prop(X) > 0.5, 1, 0)
 		# Compute accuracy when predicting with X
 		else:
-			n_correct = np.sum(np.where(self._forward_prop(X) > 0.5, 1, 0) == Y)
-			return n_correct / Y.shape[1] * 100
+			if soft:    # Percentage of correct predictions
+				n_correct = np.sum(np.where(self._forward_prop(X) > 0.5, 1, 0) == Y)
+				return n_correct / Y.shape[1] * 100
+			else:       # RMS as percentage
+				return np.sqrt(np.mean(np.square(self._forward_prop(X) - Y))) * 100
 
 	def save_FFNN(self, file_name, dir_path='F:\\Neural_Networks\\'):
 		"""
