@@ -1,16 +1,16 @@
 
 # Only describes hidden layers
 layers:
-  - n_nodes: 16                   # Layer 1
-    activation: 'leaky-relu'
-  - n_nodes: 16
-    activation: 'leaky-relu'
-  - n_nodes: 8
-    activation: 'leaky-relu'
-  - n_nodes: 5
-    activation: 'leaky-relu'
-  - n_nodes: 3                    # Layer L - 1
-    activation: 'leaky-relu'
+  - n_nodes: 3                   # Layer 1
+    activation: 'tanh'
+  - n_nodes: 3
+    activation: 'tanh'
+  - n_nodes: 3
+    activation: 'tanh'
+  - n_nodes: 2
+    activation: 'tanh'
+  - n_nodes: 2                    # Layer L - 1
+    activation: 'tanh'
 
 # Only describes output layers
 output:

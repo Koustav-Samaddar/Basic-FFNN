@@ -85,7 +85,8 @@ def create_ffnn_classifier(config_file, one_class, zero_class, save_name, alpha,
 		m += 1
 
 	# Creating training set variables
-	X_train = V_train[:-1, :]
+	V_train = V_train.astype(np.float16)
+	X_train = V_train[:-1, :] / 255.
 	Y_train = V_train[-1, :].reshape((1, m))
 	x_n = X_train.shape[0]
 
@@ -187,5 +188,5 @@ def test_ffnn_classifier(one_class, zero_class, save_name):
 
 
 if __name__ == '__main__':
-	create_ffnn_classifier('sample_config.yaml', 'Fish_128', 'Bird_128', 'fish-v-bird-ffnn', 0.0001, 10000)
+	create_ffnn_classifier('sample_config.yaml', 'Fish_128', 'Bird_128', 'fish-v-bird-ffnn', 0.01, 2500)
 	# test_ffnn_classifier('Fish_128', 'Bird_128', 'F:\\Neural_Networks\\fish-v-bird-ffnn.pck')

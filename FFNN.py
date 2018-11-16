@@ -54,7 +54,7 @@ class FFNN:
 			# Creating and storing parameters for the FFNN
 			self.n_nodes = [ x_n ] + [ layer_data['n_nodes'] for layer_data in config['layers'] ] + [ config['output']['n_nodes'] ]
 			self.W  = [ None ] + [ np.random.randn(n_curr, n_prev) * 0.01 for n_prev, n_curr in zip(self.n_nodes[:-1], self.n_nodes[1:]) ]
-			self.b  = [ None ] + [ np.random.randn(n_curr, 1) * 0.01 for n_curr in self.n_nodes[1:] ]
+			self.b  = [ None ] + [ np.zeros((n_curr, 1)) for n_curr in self.n_nodes[1:] ]
 			self.g_names = [ x['activation'] for x in config['layers'] ] + [ config['output']['activation'] ]
 			self.g  = [ None ] + list(map(FFNN.getActivatorFunction, [ x['activation'] for x in config['layers'] ])) + [ FFNN.getActivatorFunction(config['output']['activation']) ]
 			self.dg = [ None ] + list(map(FFNN.getActivatorDerivative, [ x['activation'] for x in config['layers'] ])) + [ FFNN.getActivatorDerivative(config['output']['activation']) ]
@@ -198,11 +198,13 @@ class FFNN:
 						print("Iter #{3:d}: [ Forward Prop: {0:s}, Backward Prop: {1:s}, Total Pass: {2:s} ]".format(
 							*list(map(time_to_str, map(sum, [fprop_times, bprop_times, pass_times]))), i))
 
-					# Get predictions from the classifier
-
 					# Calculate and print the loss
 					loss = self.loss(self.cache['A'][-1], Y_train)
 					print("Cost: {0:f}".format(loss))
+					error = self.predict(X_train, Y_train, soft=False)
+					print("Error (RMS): {0:f}%".format(error))
+					accuracy = self.predict(X_train, Y_train)
+					print("Accuracy: {0:f}%".format(accuracy))
 					print()
 
 			# Adding times to their respective lists
