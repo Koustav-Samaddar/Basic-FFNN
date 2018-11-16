@@ -187,5 +187,5 @@ def test_ffnn_classifier(one_class, zero_class, save_name):
 
 
 if __name__ == '__main__':
-	create_ffnn_classifier('sample_config.yaml', 'Fish_128', 'Bird_128', 'fish-v-bird-ffnn', 0.05, 1000)
+	create_ffnn_classifier('sample_config.yaml', 'Fish_128', 'Bird_128', 'fish-v-bird-ffnn', 0.0001, 10000)
 	# test_ffnn_classifier('Fish_128', 'Bird_128', 'F:\\Neural_Networks\\fish-v-bird-ffnn.pck')

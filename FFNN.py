@@ -102,7 +102,7 @@ class FFNN:
 		:param Y: Expected output vector of shape (1, m) corresponding to the current models output for each input vector passed where m can be 1
 		:return: Loss if A.shape == (1, 1) else Cost
 		"""
-		return -(Y * np.log(A) + (1 - Y) * np.log(1 - A))
+		return -np.mean(Y * np.log(A) + (1 - Y) * np.log(1 - A))
 
 	def _backward_prop(self, X, Y, alpha):
 		"""
@@ -200,9 +200,9 @@ class FFNN:
 
 					# Get predictions from the classifier
 
-					# Calculate and print the accuracy
-					accuracy = self.predict(X_train, Y_train, soft=False)
-					print("Accuracy (RMS): {0:.2f}%".format(accuracy))
+					# Calculate and print the loss
+					loss = self.loss(self.cache['A'][-1], Y_train)
+					print("Cost: {0:f}".format(loss))
 					print()
 
 			# Adding times to their respective lists
@@ -226,7 +226,7 @@ class FFNN:
 
 			# Calculate and print the accuracy
 			accuracy = self.predict(X_train, Y_train)
-			print("Accuracy: {0:f}%".format(accuracy))
+			print("Accuracy: {0:.3f}%".format(accuracy))
 			print()
 
 	def predict(self, X, Y=None, soft=True):
